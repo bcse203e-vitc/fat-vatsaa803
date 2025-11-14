@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>normalizeText</title>
+</head>
+<body>
+
+<h2>normalizeText Tool</h2>
+
+<textarea id="inputText" rows="12" cols="60" placeholder="Paste text here..."></textarea><br><br>
+
+<select id="modeSelect">
+  <option value="compress">compress</option>
+  <option value="expand">expand</option>
+</select>
+
+<button id="normalizeBtn">Normalize</button><br><br>
+
+<textarea id="outputText" rows="12" cols="60" placeholder="Output..." readonly></textarea><br><br>
+
+<button id="downloadBtn" disabled>Download</button>
+
+<p id="stats"></p>
+<p id="punct"></p>
+
+<script>
+function normalizeTextClient(text, mode) {
+  const rawLines = text.replace(/\r/g,'').split('\n');
+  let correctedLines = [];
+  let whitespaceCorrections = 0;
+  let punctuationOnly = [];
+
+  rawLines.forEach((line, i) => {
+    const multi = line.match(/[ \t]{2,}/g);
+    if(multi) whitespaceCorrections += multi.length;
+    let l = line.replace(/[ \t]+/g, " ");
+    const trimmed = l.trim();
+    if(trimmed !== l) whitespaceCorrections++;
+
+    correctedLines.push(trimmed);
+
+    if(trimmed && !/[A-Za-z0-9]/.test(trimmed)) punctuationOnly.push(i+1);
+  });
+
+  let finalLines = [];
+
+  if(mode === "compress") {
+    let prevBlank = false;
+    correctedLines.forEach(l=>{
+      if(l===""){
+        if(!prevBlank){ finalLines.push(""); prevBlank=true; }
+        else whitespaceCorrections++;
+      } else {
+        finalLines.push(l);
+        prevBlank=false;
+      }
+    });
+  }
+
+  else if(mode === "expand") {
+    for(let i=0;i<correctedLines.length;i++){
+      finalLines.push(correctedLines[i]);
+      if(i!==correctedLines.length-1){
+        finalLines.push("");
+        whitespaceCorrections++;
+      }
+    }
+  }
+
+  return {
+    correctedText: finalLines.join("\n"),
+    whitespaceCorrections,
+    punctuationOnly
+  };
+}
+
+const input = document.getElementById("inputText");
+const output = document.getElementById("outputText");
+const mode = document.getElementById("modeSelect");
+const stats = document.getElementById("stats");
+const punct = document.getElementById("punct");
+const dl = document.getElementById("downloadBtn");
+
+document.getElementById("normalizeBtn").onclick = () => {
+  const res = normalizeTextClient(input.value, mode.value);
+  output.value = res.correctedText;
+  stats.textContent = "Whitespace corrections: " + res.whitespaceCorrections;
+  punct.textContent = "Punctuation-only lines: " + (res.punctuationOnly.join(", ") || "None");
+  dl.disabled = false;
+};
+
+dl.onclick = () => {
+  const blob = new Blob([output.value], {type:"text/plain"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "corrected.txt";
+  a.click();
+};
+</script>
+
+</body>
+</html>
