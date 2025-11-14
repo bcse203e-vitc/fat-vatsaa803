@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Water board System</title>
+        <h1>Water Board System</h1>
+        <style>
+            .button{
+                padding:10px;
+            }
+            .body{
+                color:bisque;
+            }
+        </style>
+    </head>
+    <script>
+        function calculateBill() {
+            let a = document.getElementById(water);
+           if (a>0) {
+               if (a<16){
+               return("the total amount is"(a*2)+10);
+           }
+               if (35>a>15) {
+                return ("the total amount is"(a*5)+10);
+               }
+               if (a>35){
+                return("the total amount is"(a*10)+10);
+               }
+        }
+           else {
+              return("The entered number id invalid");
+           }
+        }
+        </script>
+    <body>
+        <p>enter the no. of kilo litres of water used by you</p>
+        <input type = "text" water onkeypress="calculateBill">
+        <button id="submit" submit onclick="calculateBill"> Submit</button> 
+     
+    </body>
+
+
+
+</html>
